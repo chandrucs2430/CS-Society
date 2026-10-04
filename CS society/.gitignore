@@ -1,8 +1,0 @@
-.env
-.env.*
-.env*
-dist/
-node_modules/
-.vercel
-!.env.example
-app-config.js
