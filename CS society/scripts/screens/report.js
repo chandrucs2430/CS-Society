@@ -67,19 +67,41 @@ function renderStep(){
     $('#rsend').onclick=submitReport;
   }
 }
-function submitReport(){
+async function submitReport(){
   if(!$('#conf').checked){D.err.conf='Confirm the pin location before sending.';D.confirmed=false;renderStep();$('#conf').focus();return}
   if(!state.signedIn){needAuth('#/report');return}
-  const prev=earned(),id=state.nextId++,ph=D.photo==='sample'?'before':D.photo,now=Date.now();
-  const e={ts:now,who:'me',type:'reported',text:D.desc.trim()};if(ph)e.photo=ph;
-  state.issues.unshift({id,title:D.title.trim(),cat:D.cat,status:'New',x:D.x,y:D.y,place:locLabel(D.x,D.y),desc:D.desc.trim()||D.title.trim(),reporter:'me',volunteer:null,reportedAt:now,timeline:[e]});
-  state.extraReported++;addNotif('update',id,'Your report was shared with nearby volunteers');checkMilestones(prev);save();
-  D.done=id;D.err={};renderReport();renderChrome('report');window.scrollTo(0,0);
+  const submit=$('#rsend'),prev=earned(),[latitude,longitude]=toLL(D.x,D.y);
+  submit.disabled=true;submit.textContent='Sending…';
+  try{
+    const id=await createReport({
+      title:D.title.trim(),
+      description:D.desc.trim(),
+      category:D.cat,
+      latitude,
+      longitude,
+      place:locLabel(D.x,D.y),
+      photo:D.photo==='sample'?null:D.photo
+    });
+    D.done=id;D.err={};renderReport();renderChrome('report');window.scrollTo(0,0);
+    try{
+      await refreshBackendState();
+      await checkMilestones(prev);
+      await refreshBackendState();
+      renderReport();renderChrome('report');
+    }catch(syncError){
+      console.error('Report was saved, but follow-up data could not be refreshed:',syncError);
+      toast('Your report was saved, but the latest data could not be refreshed. Reload to sync it.');
+    }
+  }catch(error){
+    console.error('Could not submit report:',error);
+    toast(error.message||'Could not send the report. Please try again.');
+    submit.disabled=false;submit.innerHTML='Send report';
+  }
 }
 function renderReport(){
   if(D.done){
     const i=iss(D.done);
-    page(`<div class="wrap rwrap"><div class="page-head"></div><div class="block success"><div class="big">${ic('check',38,2.6)}</div><h1 style="font-size:2rem">Report shared</h1><p class="lead" style="margin:0 auto 12px">Volunteers nearby can see it now. You’ll find updates on the report’s timeline and in Notifications.</p><p>Reference <strong>GN-${String(D.done).padStart(4,'0')}</strong>${i?` · ${esc(i.title)}`:''}</p><p class="cap">This report is saved only in this browser. In a moment a volunteer may claim it, and you’ll get a notification.</p><div class="row" style="justify-content:center;margin-top:12px"><a class="btn btn-primary" href="#/issue/${D.done}">View your report</a><button class="btn btn-ghost" id="again">Report another</button><a class="btn btn-ghost" href="#/solve?status=all">See the map</a></div></div></div>`);
+    page(`<div class="wrap rwrap"><div class="page-head"></div><div class="block success"><div class="big">${ic('check',38,2.6)}</div><h1 style="font-size:2rem">Report shared</h1><p class="lead" style="margin:0 auto 12px">Volunteers nearby can see it now. You’ll find updates on the report’s timeline and in Notifications.</p><p>Reference <strong>GN-${String(D.done).slice(0,8).toUpperCase()}</strong>${i?` · ${esc(i.title)}`:''}</p><p class="cap">This report is securely saved to your community’s Supabase database.</p><div class="row" style="justify-content:center;margin-top:12px"><a class="btn btn-primary" href="#/issue/${D.done}">View your report</a><button class="btn btn-ghost" id="again">Report another</button><a class="btn btn-ghost" href="#/solve?status=all">See the map</a></div></div></div>`);
     $('#again').onclick=()=>{D=newDraft();renderReport();const h=$('h1',app);h.setAttribute('tabindex','-1');h.focus()};
     return;
   }

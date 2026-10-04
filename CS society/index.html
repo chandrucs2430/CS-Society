@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#071B19">
+<base href="/">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <title>CS Society · Community action for your street</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +13,9 @@
 <link rel="stylesheet" href="styles/app.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app-config.js"></script>
+<script src="scripts/backend.js"></script>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite" aria-label="Loading CS Society"><div class="sp-in"><div class="sp-logo"><i></i><i></i><i></i><img id="splashLogo" alt="CS Society" width="240" height="240"></div><p class="sp-cap">Loading your neighborhood…</p><div class="sp-bar" aria-hidden="true"><span></span></div></div></div>
@@ -52,6 +56,7 @@
 <script src="scripts/screens/report.js"></script>
 <script src="scripts/screens/issue.js"></script>
 <script src="scripts/screens/profile.js"></script>
+<script src="scripts/screens/admin.js"></script>
 <script src="scripts/screens/notifications.js"></script>
 <script src="scripts/screens/impact.js"></script>
 <script src="scripts/screens/auth.js"></script>

@@ -80,7 +80,7 @@ function fitPins(m,list){if(!list.length)return;const pts=list.map(i=>toLL(i.x,i
 new MutationObserver(()=>{document.querySelectorAll('[data-leaf]:not([data-done])').forEach(el=>{
   const x=+el.dataset.x,y=+el.dataset.y,m=leafMap(el,{zoomControl:false,scroll:false,drag:false,keyboard:false,zoom:16});if(!m)return;
   m.setView(toLL(x,y),16);const g=window.L.layerGroup().addTo(m);
-  if(el.dataset.kind==='pick')pickMarker(g,x,y);else{const i=iss(+el.dataset.id);if(i)addPins(g,[i])}})}).observe(document.body,{childList:true,subtree:true});
+  if(el.dataset.kind==='pick')pickMarker(g,x,y);else{const i=iss(el.dataset.id);if(i)addPins(g,[i])}})}).observe(document.body,{childList:true,subtree:true});
 
 
 /* ---------- location: choose + live tracking ---------- */
@@ -105,7 +105,7 @@ function startLive(){
   err=>{stopLive();locationRecovery(locationReason(err),currentDestination())},
   {enableHighAccuracy:true,maximumAge:5000,timeout:20000})}catch(error){stopLive();console.error('Could not start device location tracking:',error);locationRecovery('unavailable',currentDestination())}}
 function stopLive(){if(LIVE.id!=null)navigator.geolocation.clearWatch(LIVE.id);LIVE.id=null;LIVE.on=false;LIVE.pos=null;liveSet.forEach(paintLive);refreshLocBars();if(liveHook)liveHook()}
-function setLoc(lat,lng,label,quiet){const was=state.issues.map(i=>toLL(i.x,i.y));state.loc={lat,lng,label};C0={lat,lng};state.profile.hood=label;
+function setLoc(lat,lng,label,quiet){const was=state.issues.map(i=>toLL(i.x,i.y));state.loc={lat,lng,label};C0={lat,lng};
   state.issues.forEach((i,k)=>{const q=toXY({lat:was[k][0],lng:was[k][1]});i.x=q.x;i.y=q.y});save();if(!quiet){rerender();toast('Location set to '+label+'.')}}
 async function revName(lat,lng){try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&lat=${lat}&lon=${lng}`);const j=await r.json();return j&&j.display_name?shortName(j.display_name):null}catch(e){return null}}
 function pickIcon(){return window.L.divIcon({className:'pinicon',html:'<svg width="36" height="44" viewBox="-18 -40 36 44" style="overflow:visible"><path d="M0 0C-6-11-18-17-18-30a18 18 0 1 1 36 0C18-17 6-11 0 0z" fill="#36BC7A" stroke="#fff" stroke-width="3"/><circle cy="-30" r="7" fill="#0B2B26"/></svg>',iconSize:[36,44],iconAnchor:[18,40]})}

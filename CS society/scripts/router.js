@@ -5,7 +5,7 @@ function route(){
   const{parts}=parseHash();const r=parts[0]||'home';
   if(dlg.open)dlg.close();
   try{
-    const known=['home','solve','report','issue','me','notifications','impact','auth','not-found','offline','location-unavailable','signin-required','access-denied'];
+    const known=['home','solve','report','issue','me','notifications','impact','admin','auth','not-found','offline','location-unavailable','signin-required','access-denied'];
     if(!known.includes(r)){VIEWS['not-found'](parts,new URLSearchParams());renderChrome('not-found')}
     else rerender();
     window.scrollTo(0,0);

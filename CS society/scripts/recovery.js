@@ -22,7 +22,7 @@ VIEWS.offline=function(parts,q){
   const returnTo=destinationHash(q.get('return'));
   const restored=navigator.onLine;
   recoveryPage(restored?'Connection restored':'You’re offline',`<p class="lead" role="status" aria-live="polite">${restored?'Your connection is back. Retry the feature you were using.':`A connection is needed for ${onlineFeatureNames[feature]}.`}</p>
-    <div class="recovery-details"><h2>What still works in this browser</h2><p>Previously saved reports and profile details remain available here. You can browse them, edit local settings, and continue typing in a report draft in this tab; those changes do not sync to a server.</p>
+    <div class="recovery-details"><h2>What still works in this browser</h2><p>Your selected display location and view preference remain saved. An in-progress report draft remains in this tab while the page stays open, but reports and profile data are not cached for offline use and drafts are lost if you reload or close the tab.</p>
     <h2>What needs a connection</h2><ul><li>Map tiles and interactive maps</li><li>Place search and online place names</li><li>Turn-by-turn directions</li></ul></div>
     <div class="row">${restored?`<button type="button" class="btn btn-primary" data-retry-feature="${feature}" data-return="${esc(returnTo)}">${feature==='places'?'Search for your place':'Try again'}</button>`:''}<a class="btn btn-ghost" href="#/">Home</a><a class="btn btn-ghost" href="#/solve?status=all">Solve</a></div>`);
   $$('[data-retry-feature]',app).forEach(button=>button.onclick=()=>retryFromOffline(button.dataset.retryFeature,button.dataset.return));
@@ -55,21 +55,20 @@ VIEWS['location-unavailable']=function(parts,q){
 VIEWS['signin-required']=function(parts,q){
   const destination=destinationHash(q.get('next'));
   const signIn='#/auth?mode=signin&next='+encodeURIComponent(destination);
-  recoveryPage('Please sign in to continue',`<p class="lead">Sign in to continue to the page or action you requested. This demo keeps sign-in details only in this browser.</p>
+  recoveryPage('Please sign in to continue',`<p class="lead">Sign in to continue to the page or action you requested. Your account and community data are securely stored in Supabase.</p>
     <div class="row"><a class="btn btn-primary" href="${esc(signIn)}">Sign in</a><a class="btn btn-ghost" href="${esc(destination)}">Return to the previous destination</a></div>`);
 };
 VIEWS['access-denied']=function(parts,q){
-  const reason=q.get('reason')==='volunteer'?'volunteer':'view';
+  const reason=['volunteer','admin'].includes(q.get('reason'))?q.get('reason'):'view';
   const destination=destinationHash(q.get('return'));
   if(!state.signedIn)return needAuth(destination);
-  const canEnable=!state.profile.roles.includes('volunteer');
   const copy=reason==='volunteer'
-    ?'Enable the volunteer role in your profile before claiming or updating community tasks.'
-    :'Switch to Volunteer view to use this action.';
+    ?'A project administrator must grant volunteer access before you can claim or update community tasks.'
+    :reason==='admin'
+      ?'Administrator permissions are granted only by the project owner in Supabase.'
+      :'Switch to Volunteer view to use this action.';
   recoveryPage('You don’t have access to this action',`<p class="lead">${copy} No report or account state was changed.</p>
-    <div class="row">${canEnable?'<button type="button" class="btn btn-primary" id="enableVolunteer">Enable volunteer role</button>':`<button type="button" class="btn btn-primary" id="switchVolunteer">Switch to Volunteer view</button>`}<a class="btn btn-ghost" href="${esc(destination)}">Return to the task</a></div>`);
-  const enable=$('#enableVolunteer');
-  if(enable)enable.onclick=()=>{if(!state.profile.roles.includes('volunteer'))state.profile.roles.push('volunteer');state.mode='volunteer';save();go(destination)};
+    <div class="row">${reason==='view'&&state.profile.roles.includes('volunteer')?'<button type="button" class="btn btn-primary" id="switchVolunteer">Switch to Volunteer view</button>':''}<a class="btn btn-ghost" href="${esc(destination)}">Return to the task</a></div>`);
   const changeMode=$('#switchVolunteer');
   if(changeMode)changeMode.onclick=()=>{state.mode='volunteer';save();go(destination)};
 };
@@ -77,7 +76,7 @@ function renderUnexpectedError(error){
   console.error('CS Society failed to render:',error);
   try{disposeMaps()}catch(disposeError){console.error('Could not dispose maps after rendering failure:',disposeError)}
   try{if(dlg.open)dlg.close()}catch(closeError){console.error('Could not close dialog after rendering failure:',closeError)}
-  const safe=`<div class="wrap recovery-wrap"><section class="block recovery" role="alert" aria-labelledby="recoveryTitle"><h1 id="recoveryTitle">Something went wrong</h1><p class="lead">CS Society couldn’t finish displaying this page. Your browser-local data has not been intentionally cleared.</p><div class="row"><button type="button" class="btn btn-primary" id="reloadApp">Reload</button><a class="btn btn-ghost" href="#/">Home</a></div></section></div>`;
+  const safe=`<div class="wrap recovery-wrap"><section class="block recovery" role="alert" aria-labelledby="recoveryTitle"><h1 id="recoveryTitle">Something went wrong</h1><p class="lead">CS Society couldn’t finish displaying this page. Your account data has not been intentionally changed.</p><div class="row"><button type="button" class="btn btn-primary" id="reloadApp">Reload</button><a class="btn btn-ghost" href="#/">Home</a></div></section></div>`;
   try{
     app.innerHTML=safe;
     const reload=$('#reloadApp',app);

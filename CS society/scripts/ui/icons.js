@@ -6,8 +6,8 @@ const SSYM={
  New:c=>`<circle cx="12" cy="12" r="9" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M12 7v6M12 16.5h.01" stroke="${c}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`,
  Claimed:c=>`<circle cx="12" cy="12" r="9" fill="none" stroke="${c}" stroke-width="2.4"/><circle cx="12" cy="12" r="3.2" fill="${c}"/>`,
  'In Progress':c=>`<circle cx="12" cy="12" r="9" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M12 3a9 9 0 0 1 0 18z" fill="${c}"/>`,
+ 'Pending Verification':c=>`<circle cx="12" cy="12" r="9" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M12 7v5l3 2" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/>`,
  Resolved:c=>`<circle cx="12" cy="12" r="10" fill="${c}"/><path d="M7.5 12.5l3 3 6-7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`};
 const sIcon=(st,s=16,c='currentColor')=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true">${SSYM[st](c)}</svg>`;
 const chip=st=>`<span class="chip ${ST[st].cls}">${sIcon(st,16)}${st}</span>`;
 const catChip=c=>`<span class="chip chip-cat">${ic(c,16)}${CAT[c].label}</span>`;
-
