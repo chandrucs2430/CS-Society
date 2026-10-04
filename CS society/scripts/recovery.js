@@ -72,6 +72,32 @@ VIEWS['access-denied']=function(parts,q){
   const changeMode=$('#switchVolunteer');
   if(changeMode)changeMode.onclick=()=>{state.mode='volunteer';save();go(destination)};
 };
+function renderConfigError(error){
+  console.error('Supabase configuration error:',error);
+  try{disposeMaps()}catch(e){}
+  try{if(dlg.open)dlg.close()}catch(e){}
+  const safe=`<div class="wrap recovery-wrap"><section class="block recovery" role="alert" aria-labelledby="recoveryTitle"><h1 id="recoveryTitle">Supabase Configuration Required</h1><p class="lead">CS Society could not connect to Supabase because the project URL or publishable key is missing or invalid.</p>
+    <div class="recovery-details">
+      <h2>How to connect Supabase</h2>
+      <ol style="margin-left:20px;line-height:1.8">
+        <li>Create or select your project in the <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">Supabase Dashboard</a>.</li>
+        <li>Copy your Project URL and public anon/publishable key from <b>Project Settings → API</b>.</li>
+        <li>Set them in <code>.env</code>:<br><pre style="background:rgba(0,0,0,0.25);padding:10px;border-radius:6px;margin:8px 0;font-size:0.9em;overflow-x:auto"><code>VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key</code></pre></li>
+        <li>Rebuild the static configuration:<br><pre style="background:rgba(0,0,0,0.25);padding:8px;border-radius:6px;margin:8px 0;font-size:0.9em"><code>node scripts/build.js</code></pre></li>
+      </ol>
+      <p class="hint">Keep secret/service-role keys on your server. Never place them in browser config.</p>
+    </div>
+    <div class="row"><button type="button" class="btn btn-primary" id="reloadApp">Retry connection</button></div>
+  </section></div>`;
+  try{
+    app.innerHTML=safe;
+    const reload=$('#reloadApp',app);
+    if(reload)reload.onclick=()=>location.reload();
+  }catch(renderError){
+    console.error('Could not display config error:',renderError);
+  }
+}
 function renderUnexpectedError(error){
   console.error('CS Society failed to render:',error);
   try{disposeMaps()}catch(disposeError){console.error('Could not dispose maps after rendering failure:',disposeError)}
@@ -86,3 +112,4 @@ function renderUnexpectedError(error){
     try{app.textContent='Something went wrong. Reload this page to try again.'}catch(textError){console.error('Could not display fallback text:',textError)}
   }
 }
+

@@ -71,16 +71,21 @@ async function signedPhotoUrls(paths) {
   const urls = new Map();
   for (let offset = 0; offset < uniquePaths.length; offset += 100) {
     const batch = uniquePaths.slice(offset, offset + 100);
-    const { data, error } = await backend().storage.from(PHOTO_BUCKET).createSignedUrls(batch, 3600);
-    if (error) throw new Error(`Could not create private photo links: ${error.message}`);
-    for (const item of data || []) {
-      if (item.error || !item.signedUrl) {
-        throw new Error(`Could not create a private photo link: ${item.error?.message || 'missing signed URL'}`);
+    try {
+      const { data, error } = await backend().storage.from(PHOTO_BUCKET).createSignedUrls(batch, 3600);
+      if (error) {
+        console.warn(`Could not create private photo links: ${error.message}`);
+        continue;
       }
-      urls.set(item.path, item.signedUrl);
-    }
-    if (batch.some(path => !urls.has(path))) {
-      throw new Error('Could not create a private photo link: Supabase returned an incomplete response.');
+      for (const item of data || []) {
+        if (item.signedUrl) {
+          urls.set(item.path, item.signedUrl);
+        } else if (item.error) {
+          console.warn(`Could not create private photo link for ${item.path}: ${item.error.message || item.error}`);
+        }
+      }
+    } catch (batchError) {
+      console.warn('Batch photo signing error:', batchError.message);
     }
   }
   return urls;
@@ -281,14 +286,17 @@ async function initializeBackend() {
   state.loc = loadUiPreferences().loc || state.loc;
   await refreshBackendState();
   backendInitialized = true;
+  if (typeof dismissSplash === 'function') dismissSplash();
 
   const authHash = new URLSearchParams(location.hash.replace(/^#/, ''));
   if (recoveryRequested || authHash.get('type') === 'recovery') {
     go('#/auth?mode=update');
     return;
   }
-  const pathname = location.pathname.replace(/\/+$/, '');
-  if (!location.hash && pathname && pathname !== '/index.html') go('#/not-found');
+  if (!location.hash) {
+    go('#/');
+    return;
+  }
   if (sessionUser && state.profileStatus === 'ready' && !state.profile.name && !location.hash.includes('mode=setup')) {
     go('#/auth?mode=setup');
     return;
@@ -319,9 +327,16 @@ async function refreshBackendState() {
 }
 
 function handleBackendInitializationError(error) {
+  if (typeof dismissSplash === 'function') dismissSplash();
   if (csClient && state.signedIn) {
     showBackendLoadError(error);
     return;
+  }
+  if (error && (/configuration is missing|VITE_SUPABASE|SUPABASE_|publishable key/i.test(error.message) || !window.__CS_CONFIG__?.supabaseUrl)) {
+    if (typeof renderConfigError === 'function') {
+      renderConfigError(error);
+      return;
+    }
   }
   renderUnexpectedError(error);
 }

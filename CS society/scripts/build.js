@@ -23,10 +23,11 @@ function loadLocalEnv() {
 }
 
 loadLocalEnv();
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 function isServiceRoleKey(value) {
+  if (!value || typeof value !== 'string') return false;
   if (/^(?:sb_secret_|service_role)/i.test(value)) return true;
   const payload = value.split('.')[1];
   if (!payload) return false;
@@ -41,17 +42,17 @@ let parsedSupabaseUrl;
 try {
   parsedSupabaseUrl = new URL(supabaseUrl);
 } catch (error) {
-  throw new Error('VITE_SUPABASE_URL is required and must be a valid Supabase project URL.');
+  throw new Error('VITE_SUPABASE_URL (or SUPABASE_URL) is required and must be a valid Supabase project URL.');
 }
 if (!['https:', 'http:'].includes(parsedSupabaseUrl.protocol) ||
     (parsedSupabaseUrl.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(parsedSupabaseUrl.hostname))) {
   throw new Error('VITE_SUPABASE_URL must use HTTPS (HTTP is allowed only for local Supabase development).');
 }
 if (!supabaseAnonKey || /your-supabase|placeholder|example/i.test(supabaseAnonKey)) {
-  throw new Error('VITE_SUPABASE_ANON_KEY is required; configure the Supabase publishable/anon key.');
+  throw new Error('VITE_SUPABASE_ANON_KEY (or SUPABASE_ANON_KEY) is required; configure the Supabase publishable/anon key.');
 }
 if (isServiceRoleKey(supabaseAnonKey)) {
-  throw new Error('VITE_SUPABASE_ANON_KEY must be a public anon/publishable key. Service-role and secret keys are not accepted.');
+  throw new Error('VITE_SUPABASE_ANON_KEY must be a public anon/publishable key. Service-role and secret keys must stay on the server and are never accepted in browser builds.');
 }
 
 fs.mkdirSync(output, { recursive: true });
@@ -67,5 +68,16 @@ const config = {
   supabaseAnonKey,
   deploymentEnvironment: process.env.VERCEL_ENV || 'development'
 };
+
+// Security guard: Ensure no service-role or secret key is ever placed in browser config
+for (const [key, val] of Object.entries(config)) {
+  if (isServiceRoleKey(val)) {
+    throw new Error(`Security violation: secret service-role key detected in config field "${key}". Aborting build.`);
+  }
+}
+
 fs.writeFileSync(path.join(output, 'app-config.js'), `window.__CS_CONFIG__ = ${JSON.stringify(config)};\n`, { mode: 0o600 });
-console.log(`Built CS Society for ${config.deploymentEnvironment}.`);
+fs.writeFileSync(path.join(root, 'app-config.js'), `window.__CS_CONFIG__ = ${JSON.stringify(config)};\n`, { mode: 0o600 });
+const maskedKey = supabaseAnonKey.slice(0, 10) + '...' + supabaseAnonKey.slice(-4);
+console.log(`Built CS Society for ${config.deploymentEnvironment} with Supabase URL ${supabaseUrl} (key: ${maskedKey}).`);
+

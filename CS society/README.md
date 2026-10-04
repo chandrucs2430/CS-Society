@@ -87,15 +87,37 @@ From this directory (`CS society`):
 2. Edit `.env` and provide:
 
    ```dotenv
+   # Public Supabase URL (also supports SUPABASE_URL)
    VITE_SUPABASE_URL=https://your-project-id.supabase.co
+
+   # Public Anon / Publishable Key (also supports SUPABASE_ANON_KEY)
    VITE_SUPABASE_ANON_KEY=your-public-anon-or-publishable-key
+
+   # Optional: Secret Service-Role Key (For server-side maintenance only; NEVER public)
+   # SUPABASE_SERVICE_ROLE_KEY=your-secret-service-role-key
    ```
 
-   Obtain these values from the Supabase project's API settings. Use only the
-   project URL and public anon/publishable key. Never use a database password,
-   service-role key, or secret key in the browser or any `VITE_` variable.
+   Obtain these values from your Supabase project's API settings (**Project Settings → API**).
+   Use only the project URL and public anon/publishable key for browser builds. Never
+   use a database password, service-role key, or secret key in browser code or in
+   any public variable. The build script automatically enforces this check and
+   refuses to bundle any key with `service_role` claims.
 
-3. Apply and configure the Supabase schema as described below.
+3. Verify Supabase connectivity and schema health:
+
+   ```powershell
+   node scripts/check-connection.js
+   ```
+
+   This automated test suite verifies:
+   - Environment variable format and anon key security
+   - Supabase REST API reachability
+   - Public community table read access (`cs_reports`, `cs_profiles`, `cs_report_events`)
+   - Row Level Security (RLS) enforcement on private tables (`profiles`, `cs_profile_roles`, `cs_profile_settings`, `cs_notifications`)
+   - Stored procedure / RPC function registration (`cs_create_report`, `cs_transition_report`, `cs_save_my_profile`, etc.)
+   - Storage bucket (`cs-report-photos`) private signing endpoint
+   - Build-time secret leak prevention in `dist/app-config.js`
+
 4. Build and serve:
 
    ```powershell
@@ -105,13 +127,12 @@ From this directory (`CS society`):
 
 5. Open <http://localhost:8000>. Device location requires browser permission.
 
-The build reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the process
-environment or a simple root `.env` file. It validates the URL and refuses
+The build reads `VITE_SUPABASE_URL` / `SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` / `SUPABASE_ANON_KEY`
+from the process environment or `.env`. It validates the URL, enforces HTTPS, and strictly refuses
 placeholder values and service-role/secret keys. The generated `dist/app-config.js`
-contains the public URL and key and is intentionally browser-readable; it is
-not a place for secrets. The checked-in `.gitignore` excludes `.env` files,
-build output, dependencies, and Vercel's local project link while allowing the
-safe `.env.example` template.
+contains only the public URL and key and is browser-readable; it is not a place for secrets.
+The checked-in `.gitignore` excludes `.env` files, build output, dependencies, and Vercel's
+local project link while allowing the safe `.env.example` template.
 
 ## Supabase setup
 
@@ -227,6 +248,16 @@ Re-run the inspection against each target immediately before migration.
 - Browser configuration uses only the public anon/publishable key. There is no
   server function or service-role credential in this static app.
 
+### Pre-migration inspection query
+
+[`supabase/inspect/profile-schema-inspection.sql`](./supabase/inspect/profile-schema-inspection.sql) is a read-only query (it changes nothing) that returns the existing profile tables, RLS state, policies, triggers, grants and photo-bucket settings as one JSON document. Run it in the Supabase SQL Editor of each target project before applying the migrations. It lives outside `migrations/` on purpose so migration tooling never tries to apply it.
+
+### Environment files and secrets
+
+- Only `.env.example` is meant to be committed. `.gitignore` ignores every other `.env*` file, `dist/` and `.vercel`.
+- `vercel env pull` writes `.env.local`, which can contain a short-lived `VERCEL_OIDC_TOKEN`. Do not zip, commit or share it.
+- Make sure `VITE_SUPABASE_URL` points to the same Supabase project in `.env`, in Vercel, and in any MCP/CLI configuration (`.mcp.json` `project_ref`) for the environment you are working in.
+
 ## Vercel deployment
 
 Configure the Vercel project for this repository:
@@ -295,6 +326,7 @@ styles/app.css             Application styles
 scripts/
   backend.js               Supabase Auth, queries, RPCs, Storage operations
   build.js                 Static build and public runtime config
+  check-connection.js      Automated Supabase connection, schema, and RLS test suite
   state.js                 In-memory UI state
   domain/                  App vocabulary and helpers
   ui/                      Shared icons and cards
@@ -302,6 +334,7 @@ scripts/
   maps.js                  Map, geolocation, search, and directions
   router.js                Hash routing and unknown-route handling
 supabase/migrations/       SQL schema, triggers, RLS, functions, Storage policies
+supabase/inspect/          Read-only SQL for inspecting a target project before migrating
 vercel.json                Static output and rewrites
 .env.example               Public-key placeholders only
 ```

@@ -1,0 +1,11 @@
+.vscode/
+.env
+.env.*
+.env*
+!.env.example
+CS society/dist/
+CS society/.env
+CS society/.env.*
+CS society/.env*
+!CS society/.env.example
+CS society/app-config.js
