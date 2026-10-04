@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071B19">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<title>CS Society · Community action for your street</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+</head>
+<body>
+<div id="splash" role="status" aria-live="polite" aria-label="Loading CS Society"><div class="sp-in"><div class="sp-logo"><i></i><i></i><i></i><img id="splashLogo" alt="CS Society" width="240" height="240"></div><p class="sp-cap">Loading your neighborhood…</p><div class="sp-bar" aria-hidden="true"><span></span></div></div></div>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top dark">
+  <div class="wrap bar">
+    <a class="brand" href="#/" aria-label="CS Society home"><img class="logo" src="assets/logo.jpg" alt="CS Society: Report, Volunteer, Cleaner Tomorrow" width="560" height="560"></a>
+    <nav class="primary" id="primaryNav" aria-label="Main">
+      <a href="#/" data-r="home">Home</a>
+      <a href="#/solve" data-r="solve">Solve</a>
+      <a href="#/impact" data-r="impact">Impact</a>
+    </nav>
+    <div class="tools" id="tools"></div>
+  </div>
+</header>
+<main id="main" tabindex="-1"></main>
+<nav class="tabbar" id="tabbar" aria-label="Main">
+  <a href="#/" data-r="home"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="t">Home</span></a>
+  <a href="#/solve" data-r="solve"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg><span class="t">Solve</span></a>
+  <a href="#/report" data-r="report" class="fab" aria-label="Report an issue"><span class="fabc"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span class="t">Report</span></a>
+  <a href="#/impact" data-r="impact"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg><span class="t">Impact</span></a>
+  <a href="#/me" data-r="me"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="t">Profile</span></a>
+</nav>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="scripts/core.js"></script>
+<script src="scripts/domain/vocabulary.js"></script>
+<script src="scripts/ui/icons.js"></script>
+<script src="scripts/state.js"></script>
+<script src="scripts/domain/helpers.js"></script>
+<script src="scripts/maps.js"></script>
+<script src="scripts/shell.js"></script>
+<script src="scripts/router.js"></script>
+<script src="scripts/recovery.js"></script>
+<script src="scripts/ui/cards.js"></script>
+<script src="scripts/screens/home.js"></script>
+<script src="scripts/screens/solve.js"></script>
+<script src="scripts/screens/report.js"></script>
+<script src="scripts/screens/issue.js"></script>
+<script src="scripts/screens/profile.js"></script>
+<script src="scripts/screens/notifications.js"></script>
+<script src="scripts/screens/impact.js"></script>
+<script src="scripts/screens/auth.js"></script>
+<script src="scripts/main.js"></script>
+<script src="scripts/splash.js"></script>
+</body>
+</html>
