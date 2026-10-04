@@ -265,6 +265,27 @@ deployed or re-verified**, and anonymous/public access has not been confirmed.
 Production and Preview environment variable values and their Supabase project
 separation have not been independently inspected in this repository audit.
 
+### Current account-access checkpoint (2026-10-04)
+
+- The authenticated Vercel CLI account is `chandrucs2430`. Its linked project
+  ID is `prj_8BIAYjMerbOVfsnpleLZ1fGGzesj`, matching the project ID supplied for
+  this setup. Vercel currently reports the project name as `cssociety` (under
+  `cs-tech2`), rather than the supplied name `cs2`.
+- Vercel reports Root Directory `CS society`, Framework Preset `Other`,
+  Build Command `node scripts/build.js`, Output Directory `dist`, and Node.js
+  Version `24.x`.
+- The names `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are present in
+  both Vercel Production and Preview configurations. Their values were not
+  read or printed, so the Production-to-Production and Preview-to-staging
+  mappings are **not verified**.
+- No Supabase CLI or authenticated Supabase project connection is available
+  in this environment. The staging project reference and its current schema
+  therefore remain unconfirmed. No Supabase SQL was run, no migrations or
+  Auth settings were changed, and no admin role was granted.
+- No Preview deployment was created or tested during this setup attempt. The
+  current changes remain undeployed; no new Production deployment or alias
+  verification is claimed.
+
 ## Project structure
 
 ```text
